@@ -1,5 +1,3 @@
-
-import React from 'react'
 import styled from "styled-components"
 import LogoMain from "/imagens/LogoMain.png"
 import { Link } from 'react-router-dom'

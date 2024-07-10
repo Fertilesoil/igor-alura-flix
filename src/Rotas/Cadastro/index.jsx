@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import  {
-     ButtonStyled, 
-     InputModalStyled,
-     Label,
-     SelectStyled, 
-     TextAreaStyled 
-    } from '../../Componentes/Modal/FormularioModal'
+import {
+  ButtonStyled,
+  InputModalStyled,
+  Label,
+  SelectStyled,
+  TextAreaStyled
+} from '../../Componentes/Modal/FormularioModal'
+import { VideoContexto } from '../../Context/useContext'
+import { useNavigate } from 'react-router-dom'
 
 const MainStyled = styled.main`
 background-color: var(--dark-grey);
@@ -48,7 +50,7 @@ display: flex;
 width: 100%;
 gap: 2rem;
 `
-const InputHover =styled.input`
+const InputHover = styled.input`
 width: 25rem;
 height: 3.85rem;
 border: 2px solid #fff;
@@ -71,54 +73,51 @@ gap: .5rem;
 `
 
 const Cadastro = () => {
- const [formData,setFormData]= useState({
-  
-  titulo:'',
-  categoria:'',
-  imagem:'',
-  video:'',
-  descricao:'',
+  const [formData, setFormData] = useState({
 
- });
- const [errors,setErrors]= useState({});
+    titulo: '',
+    categoria: '',
+    imagem: '',
+    video: '',
+    descricao: '',
 
-useEffect(()=>{
-  console.log(formData)
-},[formData])
+  });
+  const [errors, setErrors] = useState({});
+  const { setVideo } = VideoContexto();
+  const navegar = useNavigate();
 
- const validate =()=>{
-  const newErrors ={};
-  if (!formData.titulo) newErrors.titulo = 'Título é obrigatório';
+  useEffect(() => {
+    console.log(formData)
+  }, [formData])
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.titulo) newErrors.titulo = 'Título é obrigatório';
     if (!formData.categoria) newErrors.categoria = 'Categoria é obrigatória';
     if (!formData.imagem) newErrors.imagem = 'URL da imagem é obrigatória';
     if (!formData.video) newErrors.video = 'URL do vídeo é obrigatória';
     if (!formData.descricao) newErrors.descricao = 'Descrição é obrigatória';
     return newErrors;
- }
- const handleChange = (e) => {
-  const { name, value } = e.target;
-  setFormData({
-    ...formData,
-    [name]: value,
-  });
-};
-const handleSubmit = async (e) => {
-  e.preventDefault();
- 
-  // const handleCategoriaChange = (e) => {
-  //   const categoria = e.target.value;
-  //   setFormData({ ...formData, categoria });
-  // };
-
-  const validationErrors = validate();
-  if (Object.keys(validationErrors).length > 0) {
-    setErrors(validationErrors);
-    return;
   }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+  const handleSubmit = async (e, setVideo) => {
+    e.preventDefault();
 
-  setErrors({});
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
-try {
+    setErrors({});
+
+    try {
       const response = await fetch('https://666c940949dbc5d7145e7fe2.mockapi.io/geek/api/aluflix', {
         method: 'POST',
         headers: {
@@ -126,7 +125,7 @@ try {
         },
         body: JSON.stringify(formData),
       });
-console.log(response)
+      console.log(response)
       if (response.ok) {
         console.log('Formulário enviado com sucesso!');
         setFormData({
@@ -136,6 +135,9 @@ console.log(response)
           video: '',
           descricao: '',
         });
+        await response.json();
+        setVideo(estado => estado.concat(response))
+        navegar("/");
       } else {
         console.error('Erro ao enviar o formulário.');
         console.log(response)
@@ -157,96 +159,96 @@ console.log(response)
   };
   return (
     <MainStyled>
-    <TitleStyled>
+      <TitleStyled>
         NOVO VIDEO
-    </TitleStyled>
-    <SubTitle>Complete o formulário para criar um novo card de vídeo.</SubTitle>
-   <CaixaCadastro>
-    <TitleContainer> Criar Card</TitleContainer>
-<ContainerFirst>
-     <ErroStyled>
-       <Label  htmlFor='titulo'> Titulo
-            <InputModalStyled name='titulo' 
-            placeholder='Titulo'
-            onChange={handleChange}
-            value={formData.titulo}
-            />
-        </Label>
-        {errors.titulo && <ErrorMessage>{errors.titulo}</ErrorMessage>}
-     </ErroStyled>
-    <ErroStyled>
-      <Label >Categorias
-        <SelectStyled 
-        name='categoria'
-        onChange={handleChange} 
-        value={formData.categoria} >
-          <option disabled value=''>Escolha Uma categoria</option>
-          <option value='frontend'>Front-End</option>
-          <option value='backend'>Back-End</option>
-          <option value='mobile'>Mobile</option>
-       </SelectStyled>
-      </Label>
-      {errors.categoria && <ErrorMessage>{errors.categoria}</ErrorMessage>}
-    </ErroStyled>
-        
-</ContainerFirst>
-     <ContainerFirst>
-      <ErroStyled>
-         <Label htmlFor='imagem'>Imagem
-        <InputHover
-          placeholder='insira a url da imagem'
-          name='imagem' 
-          id='imagem' 
-          type='url'
-          required
-          onChange={handleChange}
-          value={formData.imagem}
-       />
-      </Label>
-      {errors.imagem && <ErrorMessage>{errors.imagem}</ErrorMessage>}
-      </ErroStyled>
-    <ErroStyled>
-       <Label htmlFor='video'>Video
-        <InputHover
-        placeholder='insira a url do video' 
-        name='video' 
-        id='video' 
-        type='url' 
-        required
-        onChange={handleChange}
-        value={formData.video}
-        />
-      </Label>
-      {errors.video && <ErrorMessage>{errors.video}</ErrorMessage>} 
-    </ErroStyled>
-     
-    </ContainerFirst>  
-    <ContainerFirst>
-      <ErroStyled>
-        <Label htmlFor='descricao'>Descrição
-        <TextAreaStyled 
-        id='descricao' 
-        name='descricao' 
-        onChange={handleChange} 
-        value={formData.descricao}/>
-      </Label>
-      {errors.descricao && <ErrorMessage>{errors.descricao}</ErrorMessage>}
-      </ErroStyled>
-        
-    </ContainerFirst>
-    
+      </TitleStyled>
+      <SubTitle>Complete o formulário para criar um novo card de vídeo.</SubTitle>
+      <CaixaCadastro>
+        <TitleContainer> Criar Card</TitleContainer>
         <ContainerFirst>
-           <ButtonStyled onClick={handleSubmit}>Guardar</ButtonStyled>
-           <ButtonStyled onClick={handleClear}>Limpar</ButtonStyled>
-            
+          <ErroStyled>
+            <Label htmlFor='titulo'> Titulo
+              <InputModalStyled name='titulo'
+                placeholder='Titulo'
+                onChange={handleChange}
+                value={formData.titulo}
+              />
+            </Label>
+            {errors.titulo && <ErrorMessage>{errors.titulo}</ErrorMessage>}
+          </ErroStyled>
+          <ErroStyled>
+            <Label >Categorias
+              <SelectStyled
+                name='categoria'
+                onChange={handleChange}
+                value={formData.categoria} >
+                <option disabled value=''>Escolha Uma categoria</option>
+                <option value='frontend'>Front-End</option>
+                <option value='backend'>Back-End</option>
+                <option value='mobile'>Mobile</option>
+              </SelectStyled>
+            </Label>
+            {errors.categoria && <ErrorMessage>{errors.categoria}</ErrorMessage>}
+          </ErroStyled>
+
         </ContainerFirst>
-            
-       
-   </CaixaCadastro>
-    
- 
+        <ContainerFirst>
+          <ErroStyled>
+            <Label htmlFor='imagem'>Imagem
+              <InputHover
+                placeholder='insira a url da imagem'
+                name='imagem'
+                id='imagem'
+                type='url'
+                required
+                onChange={handleChange}
+                value={formData.imagem}
+              />
+            </Label>
+            {errors.imagem && <ErrorMessage>{errors.imagem}</ErrorMessage>}
+          </ErroStyled>
+          <ErroStyled>
+            <Label htmlFor='video'>Video
+              <InputHover
+                placeholder='insira a url do video'
+                name='video'
+                id='video'
+                type='url'
+                required
+                onChange={handleChange}
+                value={formData.video}
+              />
+            </Label>
+            {errors.video && <ErrorMessage>{errors.video}</ErrorMessage>}
+          </ErroStyled>
+
+        </ContainerFirst>
+        <ContainerFirst>
+          <ErroStyled>
+            <Label htmlFor='descricao'>Descrição
+              <TextAreaStyled
+                id='descricao'
+                name='descricao'
+                onChange={handleChange}
+                value={formData.descricao} />
+            </Label>
+            {errors.descricao && <ErrorMessage>{errors.descricao}</ErrorMessage>}
+          </ErroStyled>
+
+        </ContainerFirst>
+
+        <ContainerFirst>
+          <ButtonStyled onClick={(e) => handleSubmit(e, setVideo)}>Guardar</ButtonStyled>
+          <ButtonStyled onClick={handleClear}>Limpar</ButtonStyled>
+
+        </ContainerFirst>
+
+
+      </CaixaCadastro>
+
+
     </MainStyled>
-    ) 
+  )
 }
 
 export default Cadastro

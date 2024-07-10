@@ -1,4 +1,3 @@
-import React from 'react'
 import styled from 'styled-components'
 import { Pencil, Trash2, CirclePlay } from 'lucide-react'
 import { VideoContexto } from '../../Context/useContext'
@@ -6,10 +5,6 @@ import { Link } from 'react-router-dom'
 
 
 const CardStyled = styled.div`
-/* border-radius: 0.7rem;
-width:27rem;
-height: 19rem;
-background-color: #101110; */
 position: relative;
   display: flex;
   flex-direction: column;
@@ -101,6 +96,7 @@ align-items: center;
 font-size:1.3rem ;
 color: #fff;
 background-color: transparent;
+z-index: 10;
 `
 const Assistir = styled.div`
   position: absolute;
@@ -156,61 +152,46 @@ const Assistir = styled.div`
   }
 `
 
-const Card = ({ video, img, titulo,id }) => {
-    console.log(video)
-    if (!video) {
-        return null; // Retorna null ou uma UI alternativa se o vídeo estiver indefinido
-    }
+const Card = ({ video, img, titulo, id }) => {
+  const contexto = VideoContexto()
 
-    const videoId = video?.split('=')[1];
+  console.log(video)
+  if (!video) {
+    return null; // Retorna null ou uma UI alternativa se o vídeo estiver indefinido
+  }
 
+  const { toggleModal } = VideoContexto()
 
-    // const Card = () => {
-    //     const {video} = VideoContexto()
-    //     console.log(video[1]?.imagem)
+  const apagarCard = async () => {
+    await fetch(`https://666c940949dbc5d7145e7fe2.mockapi.io/geek/api/aluflix/${id}`, {
+      method: "DELETE"
+    })
+    const newVideos = contexto.video?.filter(video => video.id !== id)
+    contexto.setVideo(newVideos)
+  }
+  return (
+    <CardStyled $titulo={titulo}>
+      <ImgCard>
+        <img src={img} alt="" />
+      </ImgCard>
 
-    
-    const {toggleModal} = VideoContexto() 
+      <FooterStyled>
+        <Icon onClick={() => toggleModal()}>
+          <Pencil />
+        </Icon>
+        <Icon onClick={apagarCard}>
+          <Trash2 />
+        </Icon>
+        <Assistir $titulo={titulo}>
 
-      
-    const  apagarCard = async ()=>{
-    const {video,setVideo}= videoContexto()
-      await fetch(`https://666c940949dbc5d7145e7fe2.mockapi.io/geek/api/aluflix/${id}`,{
-        method: "DELETE"
-        
-      })
-      const newVideos = video.filter(video => video.id !== id)
-      setVideo(newVideos)
-     }
-    return (
-        <CardStyled $titulo={titulo}>
-            <ImgCard>
-           
-                <img src={img} alt="" />
-            </ImgCard>
+          <Link to={`video/${id}`}>
+            <CirclePlay strokeWidth={`1px`} size={90} />
+          </Link>
+        </Assistir>
+      </FooterStyled>
 
-
-         
-            <FooterStyled>
-            
-                <Icon onClick={()=> toggleModal()}>
-                    <Pencil/>
-                </Icon>
-                <Icon >
-                    <Trash2 />
-                </Icon>
-                <Assistir $titulo={titulo}>
-           
-          <      Link to={`video/${id}`}>
-                <CirclePlay strokeWidth={`1px`} size={90} />
-             
-                </Link>
-                </Assistir>
-               
-            </FooterStyled>
-
-        </CardStyled>
-    )
+    </CardStyled>
+  )
 }
 
 
